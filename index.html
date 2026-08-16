@@ -1,1 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Private YT Downloader</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; max-width: 450px; margin: 30px auto; padding: 20px; }
+        input, button { width: 100%; padding: 14px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #007aff; color: white; border: none; font-weight: bold; }
+        #result { margin-top: 20px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <h2>YT Downloader</h2>
+    <input type="password" id="passkey" placeholder="Enter Secret Passkey">
+    <input type="text" id="videoUrl" placeholder="Paste YouTube Link Here">
+    <button onclick="downloadVideo()">Get MP4 Video</button>
+
+    <div id="result"></div>
+
+    <script>
+        // UPDATE THIS URL AFTER DEPLOYING TO RENDER
+        const RENDER_BACKEND_URL = "https://YOUR-APP-NAME.onrender.com/download";
+
+        async function downloadVideo() {
+            const passkey = document.getElementById('passkey').value;
+            const videoUrl = document.getElementById('videoUrl').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = "Processing... (Takes ~30s if server was sleeping)";
+
+            try {
+                const response = await fetch(RENDER_BACKEND_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-secret-key': passkey
+                    },
+                    body: JSON.stringify({ url: videoUrl })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.download_url) {
+                    resultDiv.innerHTML = `
+                        <h3>${data.title}</h3>
+                        <a href="${data.download_url}" target="_blank" download style="display:block; padding:12px; background:#28a745; color:white; text-align:center; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:10px;">Download MP4</a>
+                    `;
+                } else {
+                    resultDiv.innerHTML = "<span style='color:red;'>Error: " + (data.detail || "Failed to get video") + "</span>";
+                }
+            } catch (err) {
+                resultDiv.innerHTML = "<span style='color:red;'>Connection Error. Is your Render URL correct?</span>";
+            }
+        }
+    </script>
+</body>
+</html>
 
